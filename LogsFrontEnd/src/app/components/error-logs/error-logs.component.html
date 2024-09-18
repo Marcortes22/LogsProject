@@ -1,0 +1,70 @@
+<div class="container">
+  <h1>Logs de Errores</h1>
+
+  <!-- Botones para cambiar de tab -->
+  <div class="tabs">
+    <button (click)="setActiveTab('controlled')" [class.active]="activeTab === 'controlled'">Errores
+      Controlados</button>
+    <button (click)="setActiveTab('uncontrolled')" [class.active]="activeTab === 'uncontrolled'">Errores No
+      Controlados</button>
+  </div>
+
+
+  <!-- Tabla de Errores Controlados -->
+  @if (activeTab === 'controlled') {
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Timestamp</th>
+        <th>Mensaje</th>
+        <th>Fuente</th>
+        <th>Acción del Usuario</th>
+        <th>Comportamiento Esperado</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (error of controlledErrors; track error.id) {
+      <tr>
+        <td>{{ error.id }}</td>
+        <td>{{ error.timestamp}}</td>
+        <td>{{ error.message }}</td>
+        <td>{{ error.source }}</td>
+        <td>{{ error.userAction }}</td>
+        <td>{{ error.expectedBehaviour }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+
+  <!-- Tabla de Errores No Controlados -->
+  @if (activeTab === 'uncontrolled') {
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Timestamp</th>
+        <th>Mensaje</th>
+        <th>Fuente</th>
+        <th>Entorno</th>
+        <th>Stack Trace</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (error of uncontrolledErrors; track error.id) {
+      <tr>
+        <td>{{ error.id }}</td>
+        <td>{{ error.timestamp}}</td>
+        <td>{{ error.message }}</td>
+        <td>{{ error.source }}</td>
+        <td>{{ error.environment }}</td>
+        <td>
+          <pre>{{ error.stackTrace }}</pre>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+</div>

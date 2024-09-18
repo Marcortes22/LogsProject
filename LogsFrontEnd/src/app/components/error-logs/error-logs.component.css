@@ -1,0 +1,73 @@
+.container {
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  border-radius: 10px; /* Bordes redondeados */
+  margin: 20px auto; /* Márgenes para centrar la tarjeta */
+  max-width: 1200px; /* Ancho máximo para limitar el tamaño de la tarjeta */
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px; /* Márgen inferior */
+  justify-content: center; /* Centrar los botones de las tabs */
+}
+
+.tabs button {
+  margin-right: 10px;
+  padding: 10px 20px; /* Padding más amplio para los botones */
+  background-color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px; /* Bordes redondeados */
+  transition: background-color 0.3s ease; /* Transición suave */
+}
+
+.tabs button:last-child {
+  margin-right: 0; /* Eliminar margen derecho del último botón */
+}
+
+.tabs button:hover {
+  background-color: #e0e0e0; /* Color al pasar el ratón */
+}
+
+.tabs button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 10px; /* Bordes redondeados */
+  overflow: hidden; /* Para que los bordes redondeados también afecten a las tablas */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave para la tabla */
+  margin-bottom: 20px; /* Márgen inferior */
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px; /* Aumentar el padding */
+  text-align: left; /* Alineación del texto en las celdas */
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  text-align: center; /* Centramos los títulos de la tabla */
+}
+
+td {
+  background-color: #fafafa; /* Color de fondo más suave */
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px; /* Bordes redondeados para el pre */
+  border: 1px solid #ddd;
+  margin-top: 10px; /* Espaciado superior */
+}
