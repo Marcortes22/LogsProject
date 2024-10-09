@@ -29,6 +29,4 @@ export class ErrorLogsComponent {
   setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
-
-
 }
