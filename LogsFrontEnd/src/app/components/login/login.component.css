@@ -1,7 +1,60 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #080710;
+}
+
+.background {
+  width: 430px;
+  height: 520px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+}
+
+.background .shape {
+  height: 200px;
+  width: 200px;
+  position: absolute;
+  border-radius: 50%;
+}
+
+.shape:first-child {
+  background: linear-gradient(#1845ad, #23a2f6);
+  left: -80px;
+  top: -80px;
+}
+
+.shape:last-child {
+  background: linear-gradient(to right, #ff512f, #f09819);
+  right: -30px;
+  bottom: -80px;
+}
+
 mat-card {
   max-width: 400px;
-  margin: 2rem auto;
+  width: 100%;
   padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.13);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
+}
+
+mat-card-title {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 42px;
+  text-align: center;
+  color: #ffffff;
+  margin-left: 0;
+  margin-left: 5.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 3rem;
 }
 
 mat-form-field {
@@ -9,6 +62,114 @@ mat-form-field {
   margin-bottom: 1rem;
 }
 
+
+
+mat-form-field .mat-form-field-label {
+  color: #e5e5e5;
+}
+
+mat-form-field .mat-input-element {
+  color: #ffffff;
+}
+
+
+mat-form-field .mat-form-field-underline .mat-form-field-ripple {
+  background-color: #ffffff;
+}
+
 button {
   width: 100%;
+}
+
+.button-login{
+  border-radius: 5px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.social {
+  margin-top: 30px;
+  display: flex;
+}
+
+.social div {
+  width: 150px;
+  border-radius: 3px;
+  padding: 5px 10px 10px 5px;
+
+  color: #eaf0fb;
+  text-align: center;
+}
+
+.social div:hover {
+  background-color: rgba(255, 255, 255, 0.47);
+}
+
+.social .fb {
+  margin-left: 25px;
+}
+
+.social i {
+  margin-right: 4px;
+}
+
+
+@media (max-width: 768px) {
+  :host {
+    padding: 1rem;
+  }
+
+  .background {
+    display: none;
+  }
+
+  mat-card {
+    max-width: 100%;
+    padding: 2rem;
+    box-shadow: none;
+    backdrop-filter: none;
+    border: none;
+  }
+
+  mat-card-title {
+    font-size: 28px;
+    margin-left: 0;
+    margin-bottom: 3rem;
+    margin-left: 5rem;
+  }
+
+  mat-form-field {
+    margin-bottom: 0.5rem;
+  }
+
+  button {
+    margin-top: 1rem;
+  }
+}
+
+
+@media (max-width: 480px) {
+  mat-card-title {
+    font-size: 24px;
+    margin-bottom: 3rem;
+  }
+
+  mat-card {
+    padding: 1.5rem;
+
+  }
+
+  .background .shape {
+    height: 100px;
+    width: 100px;
+  }
+
+  .shape:first-child {
+    left: -40px;
+    top: -40px;
+  }
+
+  .shape:last-child {
+    right: -10px;
+    bottom: -40px;
+  }
 }
