@@ -23,28 +23,8 @@ namespace Persistence
 
         public async Task<IEnumerable<Log>> GetLogs(LogDto logDto)
         {
-            var filter = Builders<Log>.Filter.Empty;
-
-         
-            if (logDto != null)
-            {
-                if (!string.IsNullOrEmpty(logDto.ErrorType))
-                    filter &= Builders<Log>.Filter.Eq(log => log.ErrorType, logDto.ErrorType);
-
-                if (!string.IsNullOrEmpty(logDto.Code))
-                    filter &= Builders<Log>.Filter.Eq(log => log.Code, logDto.Code);
-
-                if (logDto.IsRetriable.HasValue)
-                    filter &= Builders<Log>.Filter.Eq(log => log.IsRetriable, logDto.IsRetriable.Value);
-
-                if (!string.IsNullOrEmpty(logDto.Message))
-                    filter &= Builders<Log>.Filter.Eq(log => log.Message, logDto.Message);
-
-                if (logDto.CreatedAt != default(DateTime))
-                    filter &= Builders<Log>.Filter.Eq(log => log.CreatedAt, logDto.CreatedAt);
-            }
-
-            return await logsCollection.Find(filter).ToListAsync();
+            var logs = await logsCollection.Find(log => log.Message == logDto.Message).ToListAsync();
+            return logs;
         }
 
         public async Task InsertLogAsync(Log log)
