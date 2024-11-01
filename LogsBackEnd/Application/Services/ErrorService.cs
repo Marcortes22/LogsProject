@@ -37,7 +37,7 @@ namespace Application.Services
 
             log.RetryCount++;
 
-            // Implementa la lógica de retry
+        
             bool retrySuccess = await AttemptRetryAsync(log);
 
             if (retrySuccess)
