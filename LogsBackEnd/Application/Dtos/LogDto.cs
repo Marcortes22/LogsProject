@@ -8,6 +8,9 @@ namespace Application.Dtos
 {
     public class LogDto
     {
+          public string ErrorType { get; set; }
+        public string Code { get; set; }
+        public bool? IsRetriable { get; set; }
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; }
     }

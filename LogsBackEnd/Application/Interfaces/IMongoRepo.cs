@@ -11,5 +11,9 @@ namespace Application.Interfaces
     public interface IMongoRepo
     {
         Task<IEnumerable<Log>> GetLogs(LogDto logDto);
+        Task InsertLogAsync(Log log);
+        Task UpdateLogAsync(Log log);
+        Task<Log> GetLogByIdAsync(string id);
+        Task DeleteLogAsync(string id);
     }
 }
