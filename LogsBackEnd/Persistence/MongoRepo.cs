@@ -1,12 +1,8 @@
-﻿using Application.Dtos;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Domain.Collections;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Persistence
@@ -14,16 +10,17 @@ namespace Persistence
     public class MongoRepo : IMongoRepo
     {
         private readonly IMongoCollection<Log> logsCollection;
+
         public MongoRepo(IConfiguration configuration)
         {
-
-        logsCollection = new MongoClient(configuration.GetConnectionString("MongoDb")).GetDatabase("logs").GetCollection<Log>("logs");
-
+            var client = new MongoClient(configuration.GetConnectionString("MongoDb"));
+            var database = client.GetDatabase("logs");
+            logsCollection = database.GetCollection<Log>("logs");
         }
 
-        public async Task<IEnumerable<Log>> GetLogs(LogDto logDto)
+        public async Task<IEnumerable<Log>> GetLogs()
         {
-            var logs = await logsCollection.Find(log => log.Message == logDto.Message).ToListAsync();
+            var logs = await logsCollection.Find(_ => true).ToListAsync(); 
             return logs;
         }
     }
