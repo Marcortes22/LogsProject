@@ -17,6 +17,19 @@ builder.Services.AddSingleton<IMongoRepo, MongoRepo>();
 builder.Services.AddScoped<IErrorService, ErrorService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+
+
 builder.Services.AddQuartz(q =>
 {
 
@@ -111,6 +124,9 @@ builder.Services.AddAuthentication("Bearer")
 
     });
 
+
+
+
 // Configuración de IHttpClientFactory para solicitudes HTTP
 builder.Services.AddHttpClient();
 
@@ -123,6 +139,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
