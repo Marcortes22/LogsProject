@@ -7,5 +7,9 @@ namespace Application.Interfaces
     public interface IMongoRepo
     {
         Task<IEnumerable<Log>> GetLogs(); // Eliminado el parámetro LogDto
+        Task InsertLogAsync(Log log);
+        Task UpdateLogAsync(Log log);
+        Task<Log> GetLogByIdAsync(string id);
+        Task DeleteLogAsync(string id);
     }
 }
