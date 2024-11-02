@@ -50,9 +50,9 @@ namespace Application.Services
             return false;
         }
 
-        public async Task<IEnumerable<Log>> GetErrorsAsync(LogDto logDto)
+        public async Task<IEnumerable<Log>> GetErrorsAsync()
         {
-            return await _mongoRepo.GetLogs(logDto);
+            return await _mongoRepo.GetLogs();
         }
 
        

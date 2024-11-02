@@ -12,7 +12,7 @@ namespace Application.Interfaces
     {
         Task LogErrorAsync(string message, string errorType, string code, bool isRetriable = false);
         Task<bool> RetryErrorAsync(string logId);
-        Task<IEnumerable<Log>> GetErrorsAsync(LogDto logDto);
+        Task<IEnumerable<Log>> GetErrorsAsync();
 
         Task<Log> GetLogByIdAsync(string logId); 
     }

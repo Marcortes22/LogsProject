@@ -20,9 +20,9 @@ namespace LogsBackEnd.Controllers
 
         // GET: api/LogErrors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Log>>> GetLogs([FromQuery] LogDto logDto = null)
+        public async Task<ActionResult<IEnumerable<Log>>> GetLogs()
         {
-            var logs = await _errorService.GetErrorsAsync(logDto);
+            var logs = await _errorService.GetErrorsAsync();
             return Ok(logs);
         }
 
