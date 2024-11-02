@@ -1,6 +1,11 @@
+using Application.Interfaces;
+using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Persistence;
+using Polly;
+using Quartz;
 using System.Text;
 
 
@@ -8,6 +13,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 
+builder.Services.AddSingleton<IMongoRepo, MongoRepo>();
+builder.Services.AddScoped<IErrorService, ErrorService>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+
+builder.Services.AddQuartz(q =>
+{
+
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+
+    var jobKey = new JobKey("RetryJob");
+    q.AddJob<RetryJob>(opts => opts.WithIdentity(jobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("RetryJob-trigger")
+        .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+});
+
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+builder.Services.AddHttpClient("RetryClient")
+    .AddTransientHttpErrorPolicy(policyBuilder =>
+        policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
 // Configuración de servicios y autenticación JWT
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
