@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { ControlledError } from '../../../core/models/controlled-error.model';
-import { UncontrolledError } from '../../../core/models/uncontrolled-error.model';
+import { ErrorLog, ErrorType } from '../../../core/models/error-log.model';
 import { ErrorLogService } from '../../services/error-log.service';
 import { MatTabsModule } from '@angular/material/tabs';
 @Component({
@@ -11,8 +10,8 @@ import { MatTabsModule } from '@angular/material/tabs';
   styleUrl: './error-logs.component.css',
 })
 export class ErrorLogsComponent {
-  controlledErrors: ControlledError[] = [];
-  uncontrolledErrors: UncontrolledError[] = [];
+  controlledErrors: ErrorLog[] = [];
+  uncontrolledErrors: ErrorLog[] = [];
   activeTab: string = 'controlled'; // Por defecto, el tab activo es "controlled"
 
   constructor(
@@ -20,9 +19,18 @@ export class ErrorLogsComponent {
   ) {}
 
   ngOnInit(): void {
-    // Cargar los datos al iniciar el componente
-    this.controlledErrors = this.errorLogService.getControlledErrors();
-    this.uncontrolledErrors = this.errorLogService.getUncontrolledErrors();
+    this.errorLogService.startErrorLogHubConnection().subscribe(() => {
+      this.errorLogService.receiveHubErrorLog().subscribe((errorLog: ErrorLog) => {
+        if (errorLog.errorType === ErrorType.Controlled) {
+          this.controlledErrors.push(errorLog);
+        }
+        else if (errorLog.errorType === ErrorType.Uncontrolled) {
+          this.uncontrolledErrors.push(errorLog);
+        } else {
+          console.log('Uknown ErrorType received', errorLog);
+        }
+      });
+    });
   }
 
   // Método para cambiar entre las pestañas
