@@ -1,13 +1,14 @@
 ﻿using Application.Dtos;
-using Application.Hub;
 using Application.Interfaces;
 using Domain.Collections;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Hub;
 
 namespace Application.Services
 {
@@ -16,15 +17,17 @@ namespace Application.Services
         private readonly IMongoRepo _mongoRepo;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<ErrorService> _logger;
+        private readonly IHubContext<ErrorLogHub, IErrorLogHubClient> _errorHub;
 
-        public ErrorService(IMongoRepo mongoRepo, IHttpClientFactory httpClientFactory, ILogger<ErrorService> logger)
+        public ErrorService(IMongoRepo mongoRepo, IHttpClientFactory httpClientFactory, ILogger<ErrorService> logger, IHubContext<ErrorLogHub, IErrorLogHubClient> errorHub)
         {
             _mongoRepo = mongoRepo;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _errorHub = errorHub;
         }
 
-        // Guarda el error en la base de datos y devuelve el ID generado
+        // Guarda el error en la base de datos y envía notificación a los usuarios
         public async Task<string> LogErrorAsync(string message, string errorType, string code, bool isRetriable = false)
         {
             var logEntry = new Log
@@ -38,19 +41,18 @@ namespace Application.Services
             };
 
             await _mongoRepo.InsertLogAsync(logEntry);
+
+            // Notifica a través de SignalR al cliente
+            await _errorHub.Clients.All.SendErrorLogToUser(logEntry);
+
             return logEntry.Id;
         }
 
-        // Método para procesar el error y manejar el objeto que viene de compra 
         public async Task<PurchaseDto> HandleLogAsync(LogDto logDto)
         {
-            // Guarda el log en la base de datos y obtiene el ID
             string logId = await LogErrorAsync(logDto.Message, logDto.ErrorType, logDto.Code, logDto.IsRetriable ?? false);
-
-            // Verifica si `purchaseDto` se pasó en `logDto`
             var purchaseDto = logDto.Purchase;
 
-            // Si `purchaseDto` es null y el error es retriable, intenta obtenerlo del servicio externo
             if (purchaseDto == null && (logDto.IsRetriable ?? false))
             {
                 _logger.LogInformation($"Intentando obtener datos de compra para log ID: {logId}");
@@ -60,7 +62,7 @@ namespace Application.Services
                 {
                     _logger.LogWarning($"No se encontró información de compra para el log ID: {logId}. Marcando como excepción.");
                     await MarkAsExceptionAsync(logId);
-                    return null; // No devuelve `PurchaseDto` ya que no hay compra asociada
+                    return null;
                 }
             }
 
@@ -70,24 +72,21 @@ namespace Application.Services
                 {
                     if (purchaseDto.IsSuccess)
                     {
-                        await DeleteLogAsync(logId); // Elimina el log si es exitoso
-                        await NotifyExternalSystemAsync(purchaseDto, logId); // Notifica al sistema externo
-                        return purchaseDto; // Retorna el objeto de compra exitoso
+                        await DeleteLogAsync(logId);
+                        await NotifyExternalSystemAsync(purchaseDto, logId);
+                        return purchaseDto;
                     }
 
-                    // Espera antes de intentar nuevamente
                     await Task.Delay(2000);
                 }
 
-                // Después de 3 intentos fallidos, marca el log como excepción y elimina `PurchaseDto`
                 await MarkAsExceptionAsync(logId);
                 _logger.LogWarning($"Fallaron 3 intentos de retry para Log ID: {logId}. Marcado como excepción.");
             }
 
-            return null; // No se devuelve `PurchaseDto` si la compra falló
+            return null;
         }
 
-        // Consulta los datos de compra del sistema externo
         public async Task<PurchaseDto> GetPurchaseDataAsync(string logId)
         {
             var client = _httpClientFactory.CreateClient("TunnelClient");
@@ -103,13 +102,12 @@ namespace Application.Services
             return JsonSerializer.Deserialize<PurchaseDto>(json);
         }
 
-        // Notifica al sistema externo cuando la compra es exitosa, incluyendo el logId
         private async Task NotifyExternalSystemAsync(PurchaseDto purchaseDto, string logId)
         {
             var client = _httpClientFactory.CreateClient("TunnelClient");
             var payload = new
             {
-                LogId = logId, // Incluye el logId en el cuerpo de la notificación
+                LogId = logId,
                 Purchase = purchaseDto
             };
             var json = JsonSerializer.Serialize(payload);
@@ -126,19 +124,17 @@ namespace Application.Services
             }
         }
 
-        // Marca un error como excepción después de varios intentos fallidos
         public async Task MarkAsExceptionAsync(string logId)
         {
             var log = await _mongoRepo.GetLogByIdAsync(logId);
             if (log != null)
             {
                 log.IsRetriable = false;
-                log.ErrorType = "Excepcion"; // Indica que es una excepción
+                log.ErrorType = "Excepcion";
                 await _mongoRepo.UpdateLogAsync(log);
             }
         }
 
-   
         public async Task<IEnumerable<Log>> GetErrorsAsync()
         {
             return await _mongoRepo.GetLogs();
@@ -149,7 +145,6 @@ namespace Application.Services
             return await _mongoRepo.GetLogByIdAsync(logId);
         }
 
-     
         public async Task DeleteLogAsync(string logId)
         {
             await _mongoRepo.DeleteLogAsync(logId);
