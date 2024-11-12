@@ -1,3 +1,4 @@
+using Application.Hub;
 using Application.Interfaces;
 using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,13 +18,15 @@ builder.Services.AddSingleton<IMongoRepo, MongoRepo>();
 builder.Services.AddScoped<IErrorService, ErrorService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
+builder.Services.AddSignalR();
 
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
         builder => builder
-            .AllowAnyOrigin()
+            //.AllowAnyOrigin()
+            .WithOrigins("http://localhost:4200")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -139,10 +142,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAllOrigins");
+//app.UseCors("AllowAllOrigins");
+app.UseCors(builder =>
+    builder.WithOrigins("http://localhost:4200")
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials());
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+#pragma warning disable ASP0014 // Suggest using top level route registrations
+app.UseEndpoints(endpoints => {
+    endpoints.MapControllers();
+    endpoints.MapHub<ErrorLogHub>("hub/error-logs");
+});
+#pragma warning restore ASP0014 // Suggest using top level route registrations
+
 app.MapControllers();
 
 app.Run();

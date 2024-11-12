@@ -18,20 +18,20 @@
         <th>ID</th>
         <th>Timestamp</th>
         <th>Mensaje</th>
-        <th>Fuente</th>
-        <th>Acción del Usuario</th>
-        <th>Comportamiento Esperado</th>
+        <th>Code</th>
+        <th>Reintentos</th>
+        <th>Recuperable</th>
       </tr>
     </thead>
     <tbody>
       @for (error of controlledErrors; track error.id) {
       <tr>
         <td>{{ error.id }}</td>
-        <td>{{ error.timestamp}}</td>
+        <td>{{ error.createdAt}}</td>
         <td>{{ error.message }}</td>
-        <td>{{ error.source }}</td>
-        <td>{{ error.userAction }}</td>
-        <td>{{ error.expectedBehaviour }}</td>
+        <td>{{ error.code }}</td>
+        <td>{{ error.retryCount }}</td>
+        <td>{{ error.isRetriable }}</td>
       </tr>
       }
     </tbody>
@@ -42,26 +42,22 @@
   @if (activeTab === 'uncontrolled') {
   <table>
     <thead>
-      <tr>
-        <th>ID</th>
+      <th>ID</th>
         <th>Timestamp</th>
         <th>Mensaje</th>
-        <th>Fuente</th>
-        <th>Entorno</th>
-        <th>Stack Trace</th>
-      </tr>
+        <th>Code</th>
+        <th>Reintentos</th>
+        <th>Recuperable</th>
     </thead>
     <tbody>
       @for (error of uncontrolledErrors; track error.id) {
       <tr>
         <td>{{ error.id }}</td>
-        <td>{{ error.timestamp}}</td>
+        <td>{{ error.createdAt}}</td>
         <td>{{ error.message }}</td>
-        <td>{{ error.source }}</td>
-        <td>{{ error.environment }}</td>
-        <td>
-          <pre>{{ error.stackTrace }}</pre>
-        </td>
+        <td>{{ error.code }}</td>
+        <td>{{ error.retryCount }}</td>
+        <td>{{ error.isRetriable }}</td>
       </tr>
       }
     </tbody>

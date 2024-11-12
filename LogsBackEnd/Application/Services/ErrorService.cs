@@ -1,6 +1,8 @@
 ﻿using Application.Dtos;
+using Application.Hub;
 using Application.Interfaces;
 using Domain.Collections;
+using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,10 +11,12 @@ namespace Application.Services
     public class ErrorService : IErrorService
     {
         private readonly IMongoRepo _mongoRepo;
+        private IHubContext<ErrorLogHub, IErrorLogHubClient> _errorHub;
 
-        public ErrorService(IMongoRepo mongoRepo)
+        public ErrorService(IMongoRepo mongoRepo, IHubContext<ErrorLogHub, IErrorLogHubClient> errorHub)
         {
             _mongoRepo = mongoRepo;
+            _errorHub = errorHub;
         }
 
         public async Task LogErrorAsync(string message, string errorType, string code, bool isRetriable = false)
@@ -28,6 +32,7 @@ namespace Application.Services
             };
 
             await _mongoRepo.InsertLogAsync(logEntry);
+            await _errorHub.Clients.All.SendErrorLogToUser(logEntry);
         }
 
         public async Task<bool> RetryErrorAsync(string logId)
