@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="IdentityModel" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Include="Polly" Version="8.4.2" />
     <PackageReference Include="Quartz" Version="3.13.0" />
   </ItemGroup>
 

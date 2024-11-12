@@ -15,7 +15,6 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.AddSingleton<IMongoRepo, MongoRepo>();
 builder.Services.AddScoped<IErrorService, ErrorService>();
-builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
 
 
@@ -47,9 +46,16 @@ builder.Services.AddQuartz(q =>
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
-builder.Services.AddHttpClient("RetryClient")
-    .AddTransientHttpErrorPolicy(policyBuilder =>
-        policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+builder.Services.AddHttpClient("TunnelClient", client =>
+{
+    client.BaseAddress = new Uri("https://<tunnel-url>/api/external/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "LogsBackEnd");
+})
+.AddTransientHttpErrorPolicy(policyBuilder =>
+    policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
 // Configuración de servicios y autenticación JWT
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
