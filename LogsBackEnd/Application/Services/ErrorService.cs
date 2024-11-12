@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Application.Hub;
 using Application.Interfaces;
 using Domain.Collections;
 using Microsoft.Extensions.Logging;
