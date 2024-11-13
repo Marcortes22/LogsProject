@@ -16,7 +16,6 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.AddSingleton<IMongoRepo, MongoRepo>();
 builder.Services.AddScoped<IErrorService, ErrorService>();
-builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
 builder.Services.AddSignalR();
 
@@ -35,24 +34,29 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddQuartz(q =>
 {
-
     q.UseMicrosoftDependencyInjectionJobFactory();
-
 
     var jobKey = new JobKey("RetryJob");
     q.AddJob<RetryJob>(opts => opts.WithIdentity(jobKey));
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("RetryJob-trigger")
-        .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+        .WithSimpleSchedule(x => x.WithIntervalInMinutes(2).RepeatForever()));
 });
 
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
-builder.Services.AddHttpClient("RetryClient")
-    .AddTransientHttpErrorPolicy(policyBuilder =>
-        policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+builder.Services.AddHttpClient("TunnelClient", client =>
+{
+    client.BaseAddress = new Uri("https://<tunnel-url>/api/external/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "LogsBackEnd");
+})
+.AddTransientHttpErrorPolicy(policyBuilder =>
+    policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
 // Configuración de servicios y autenticación JWT
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

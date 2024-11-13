@@ -1,10 +1,12 @@
-﻿
-using Application.Dtos;
+﻿using Application.Dtos;
 using Application.Interfaces;
 using Domain.Collections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Hub;
 
 namespace LogsBackEnd.Controllers
 {
@@ -13,51 +15,73 @@ namespace LogsBackEnd.Controllers
     public class LogErrorsController : ControllerBase
     {
         private readonly IErrorService _errorService;
+        private readonly IHubContext<ErrorLogHub, IErrorLogHubClient> _errorHub;
 
-        public LogErrorsController(IErrorService errorService)
+        public LogErrorsController(IErrorService errorService, IHubContext<ErrorLogHub, IErrorLogHubClient> errorHub)
         {
             _errorService = errorService;
+            _errorHub = errorHub;
         }
 
         // GET: api/LogErrors
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Log>>> GetLogs()
         {
-            var logs = await _errorService.GetErrorsAsync();
-            return Ok(logs);
-        }
+            try
+            {
+                var logs = await _errorService.GetErrorsAsync();
 
+            
+                await _errorHub.Clients.All.SendErrorLogToUser(logs);
+
+                return Ok(logs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener logs: {ex.Message}");
+            }
+        }
 
         // GET api/LogErrors/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Log>> GetLogById(string id)
         {
-            var log = await _errorService.GetLogByIdAsync(id); 
-            if (log == null)
+            try
             {
-                return NotFound($"Log con Id = {id} no encontrado.");
+                var log = await _errorService.GetLogByIdAsync(id);
+                if (log == null)
+                {
+                    return NotFound($"Log con Id = {id} no encontrado.");
+                }
+                return Ok(log);
             }
-            return Ok(log);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener log por ID: {ex.Message}");
+            }
         }
+
         // POST api/LogErrors
         [HttpPost]
         public async Task<ActionResult> CreateLog([FromBody] LogDto logDto)
         {
-            await _errorService.LogErrorAsync(logDto.Message, logDto.ErrorType, logDto.Code, logDto.IsRetriable ?? false);
-            return CreatedAtAction(nameof(GetLogs), new { }, "Log de error creado correctamente.");
-        }
+            if (logDto == null) return BadRequest("Datos del log no proporcionados.");
 
-        // POST api/LogErrors/{id}/retry
-        [HttpPost("{id}/retry")]
-        public async Task<ActionResult> RetryLog(string id)
-        {
-            var success = await _errorService.RetryErrorAsync(id);
-            if (success)
+            try
             {
-                return Ok("Retry exitoso para el log de error.");
-            }
-            return BadRequest("Retry fallido o no permitido para el log especificado.");
-        }
+                var purchaseResult = await _errorService.HandleLogAsync(logDto);
 
+                if (purchaseResult?.IsSuccess == true)
+                {
+                    return Ok(purchaseResult);
+                }
+
+                return CreatedAtAction(nameof(GetLogById), new { id = logDto.Code }, "Log de error creado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al crear log de error: {ex.Message}");
+            }
+        }
     }
 }

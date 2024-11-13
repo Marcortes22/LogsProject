@@ -13,5 +13,7 @@ namespace Application.Dtos
         public bool? IsRetriable { get; set; }
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public PurchaseDto? Purchase { get; set; }
     }
 }
