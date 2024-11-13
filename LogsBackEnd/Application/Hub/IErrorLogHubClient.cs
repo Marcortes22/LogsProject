@@ -4,6 +4,7 @@ namespace Application.Hub
 {
     public interface IErrorLogHubClient
     {
-        Task SendErrorLogToUser(Log errorLog);
+      
+        Task SendErrorLogToUser(IEnumerable<Log> logs);
     }
 }

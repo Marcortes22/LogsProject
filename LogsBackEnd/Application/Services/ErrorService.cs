@@ -27,7 +27,8 @@ namespace Application.Services
             _errorHub = errorHub;
         }
 
-        // Guarda el error en la base de datos y envía notificación a los usuarios
+  
+       
         public async Task<string> LogErrorAsync(string message, string errorType, string code, bool isRetriable = false)
         {
             var logEntry = new Log
@@ -42,14 +43,13 @@ namespace Application.Services
 
             await _mongoRepo.InsertLogAsync(logEntry);
 
-            // Notifica a través de SignalR al cliente
-            await _errorHub.Clients.All.SendErrorLogToUser(logEntry);
-
-            return logEntry.Id;
+            return logEntry.Id; 
         }
+
 
         public async Task<PurchaseDto> HandleLogAsync(LogDto logDto)
         {
+            // Guarda el log en la base de datos y obtiene el ID
             string logId = await LogErrorAsync(logDto.Message, logDto.ErrorType, logDto.Code, logDto.IsRetriable ?? false);
             var purchaseDto = logDto.Purchase;
 
@@ -66,26 +66,32 @@ namespace Application.Services
                 }
             }
 
+            // Retry de hasta 3 intentos
             if (logDto.IsRetriable ?? false && purchaseDto != null)
             {
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
                     if (purchaseDto.IsSuccess)
                     {
+                        // Si es exitoso, elimina el log y notifica al sistema externo
                         await DeleteLogAsync(logId);
                         await NotifyExternalSystemAsync(purchaseDto, logId);
                         return purchaseDto;
                     }
 
+                    // Espera antes de intentar nuevamente
                     await Task.Delay(2000);
+                    _logger.LogInformation($"Intento {attempt + 1} de retry para Log ID: {logId}");
                 }
 
+                // Después de 3 intentos fallidos, marca el log como excepción y elimina `PurchaseDto`
+                _logger.LogWarning($"Fallaron 3 intentos de retry para Log ID: {logId}. Marcado como excepción y eliminado el objeto de compra.");
                 await MarkAsExceptionAsync(logId);
-                _logger.LogWarning($"Fallaron 3 intentos de retry para Log ID: {logId}. Marcado como excepción.");
             }
 
             return null;
         }
+
 
         public async Task<PurchaseDto> GetPurchaseDataAsync(string logId)
         {

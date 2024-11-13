@@ -2,9 +2,11 @@
 using Application.Interfaces;
 using Domain.Collections;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Hub;
 
 namespace LogsBackEnd.Controllers
 {
@@ -13,35 +15,12 @@ namespace LogsBackEnd.Controllers
     public class LogErrorsController : ControllerBase
     {
         private readonly IErrorService _errorService;
+        private readonly IHubContext<ErrorLogHub, IErrorLogHubClient> _errorHub;
 
-        public LogErrorsController(IErrorService errorService)
+        public LogErrorsController(IErrorService errorService, IHubContext<ErrorLogHub, IErrorLogHubClient> errorHub)
         {
             _errorService = errorService;
-        }
-
-        // POST api/LogErrors
-        [HttpPost]
-        public async Task<ActionResult> CreateLog([FromBody] LogDto logDto)
-        {
-            if (logDto == null) return BadRequest("Datos del log no proporcionados.");
-
-            try
-            {
-                // Llama a HandleLogAsync y pasa el logDto con el objeto de compra
-                var purchaseResult = await _errorService.HandleLogAsync(logDto);
-
-                if (purchaseResult.IsSuccess)
-                {
-           
-                    return Ok(purchaseResult);
-                }
-
-                return CreatedAtAction(nameof(GetLogById), new { id = logDto.Code }, "Log de error creado correctamente.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error al crear log de error: {ex.Message}");
-            }
+            _errorHub = errorHub;
         }
 
         // GET: api/LogErrors
@@ -51,6 +30,10 @@ namespace LogsBackEnd.Controllers
             try
             {
                 var logs = await _errorService.GetErrorsAsync();
+
+            
+                await _errorHub.Clients.All.SendErrorLogToUser(logs);
+
                 return Ok(logs);
             }
             catch (Exception ex)
@@ -75,6 +58,29 @@ namespace LogsBackEnd.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error al obtener log por ID: {ex.Message}");
+            }
+        }
+
+        // POST api/LogErrors
+        [HttpPost]
+        public async Task<ActionResult> CreateLog([FromBody] LogDto logDto)
+        {
+            if (logDto == null) return BadRequest("Datos del log no proporcionados.");
+
+            try
+            {
+                var purchaseResult = await _errorService.HandleLogAsync(logDto);
+
+                if (purchaseResult?.IsSuccess == true)
+                {
+                    return Ok(purchaseResult);
+                }
+
+                return CreatedAtAction(nameof(GetLogById), new { id = logDto.Code }, "Log de error creado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al crear log de error: {ex.Message}");
             }
         }
     }

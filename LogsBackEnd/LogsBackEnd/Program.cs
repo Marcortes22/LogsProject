@@ -34,16 +34,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddQuartz(q =>
 {
-
     q.UseMicrosoftDependencyInjectionJobFactory();
-
 
     var jobKey = new JobKey("RetryJob");
     q.AddJob<RetryJob>(opts => opts.WithIdentity(jobKey));
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("RetryJob-trigger")
-        .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+        .WithSimpleSchedule(x => x.WithIntervalInMinutes(2).RepeatForever()));
 });
 
 
