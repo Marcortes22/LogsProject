@@ -62,26 +62,28 @@ namespace LogsBackEnd.Controllers
         }
 
         // POST api/LogErrors
-        [HttpPost]
-        public async Task<ActionResult> CreateLog([FromBody] LogDto logDto)
+[HttpPost]
+public async Task<ActionResult> CreateLog([FromBody] LogDto logDto)
+{
+    if (logDto == null) return BadRequest("Datos del log no proporcionados.");
+
+    try
+    {
+        var purchaseResult = await _errorService.HandleLogAsync(logDto);
+
+        if (purchaseResult?.IsSuccess == true)
         {
-            if (logDto == null) return BadRequest("Datos del log no proporcionados.");
-
-            try
-            {
-                var purchaseResult = await _errorService.HandleLogAsync(logDto);
-
-                if (purchaseResult?.IsSuccess == true)
-                {
-                    return Ok(purchaseResult);
-                }
-
-                return CreatedAtAction(nameof(GetLogById), new { id = logDto.Code }, "Log de error creado correctamente.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error al crear log de error: {ex.Message}");
-            }
+            return Ok(purchaseResult);
         }
+
+  
+        return Created("/api/LogErrors/" + logDto.Code, "Log de error creado correctamente.");
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Error al crear log de error: {ex.Message}");
+    }
+}
+
     }
 }
