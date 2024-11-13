@@ -20,12 +20,13 @@ builder.Services.AddScoped<IErrorService, ErrorService>();
 builder.Services.AddSignalR();
 
 
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
         builder => builder
-            //.AllowAnyOrigin()
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("http://localhost:4200") 
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -50,12 +51,17 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Services.AddHttpClient("TunnelClient", client =>
 {
-    client.BaseAddress = new Uri("https://<tunnel-url>/api/external/");
+    client.BaseAddress = new Uri("https://lzkf0mrp-7037.use2.devtunnels.ms/api");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "LogsBackEnd");
 })
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+})
 .AddTransientHttpErrorPolicy(policyBuilder =>
     policyBuilder.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
 
 // Configuración de servicios y autenticación JWT
 builder.Services.AddControllers();
@@ -146,7 +152,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseCors("AllowAllOrigins");
+
 app.UseCors(builder =>
     builder.WithOrigins("http://localhost:4200")
            .AllowAnyMethod()

@@ -49,86 +49,99 @@ namespace Application.Services
 
         public async Task<PurchaseDto> HandleLogAsync(LogDto logDto)
         {
-            // Guarda el log en la base de datos y obtiene el ID
+    
             string logId = await LogErrorAsync(logDto.Message, logDto.ErrorType, logDto.Code, logDto.IsRetriable ?? false);
             var purchaseDto = logDto.Purchase;
 
-            if (purchaseDto == null && (logDto.IsRetriable ?? false))
-            {
-                _logger.LogInformation($"Intentando obtener datos de compra para log ID: {logId}");
-                purchaseDto = await GetPurchaseDataAsync(logId);
-
-                if (purchaseDto == null)
-                {
-                    _logger.LogWarning($"No se encontró información de compra para el log ID: {logId}. Marcando como excepción.");
-                    await MarkAsExceptionAsync(logId);
-                    return null;
-                }
-            }
-
-            // Retry de hasta 3 intentos
+         
             if (logDto.IsRetriable ?? false && purchaseDto != null)
             {
                 for (int attempt = 0; attempt < 3; attempt++)
                 {
-                    if (purchaseDto.IsSuccess)
+                    _logger.LogInformation($"Intentando enviar compra al endpoint Retry. Intento {attempt + 1} para log ID: {logId}");
+
+           
+                    bool retrySuccess = await RetryPurchaseAsync(purchaseDto);
+
+                    if (retrySuccess)
                     {
-                        // Si es exitoso, elimina el log y notifica al sistema externo
+                        _logger.LogInformation($"Reintento exitoso para log ID: {logId}. Eliminando log y notificando al sistema externo.");
+
+                     
                         await DeleteLogAsync(logId);
-                        await NotifyExternalSystemAsync(purchaseDto, logId);
+                        await NotifyExternalSystemAsync(purchaseDto);
                         return purchaseDto;
                     }
 
-                    // Espera antes de intentar nuevamente
+                
                     await Task.Delay(2000);
-                    _logger.LogInformation($"Intento {attempt + 1} de retry para Log ID: {logId}");
                 }
 
-                // Después de 3 intentos fallidos, marca el log como excepción y elimina `PurchaseDto`
-                _logger.LogWarning($"Fallaron 3 intentos de retry para Log ID: {logId}. Marcado como excepción y eliminado el objeto de compra.");
+                // Después de 3 intentos fallidos, marca el log como excepción
+                _logger.LogWarning($"Fallaron 3 intentos de retry para Log ID: {logId}. Marcando como excepción y eliminando el objeto de compra.");
                 await MarkAsExceptionAsync(logId);
+            }
+            else
+            {
+                _logger.LogWarning($"La compra para log ID: {logId} no es elegible para reintento o no se proporcionó información de compra.");
             }
 
             return null;
         }
 
-
-        public async Task<PurchaseDto> GetPurchaseDataAsync(string logId)
+        public async Task<bool> RetryPurchaseAsync(PurchaseDto purchaseDto)
         {
-            var client = _httpClientFactory.CreateClient("TunnelClient");
-            var response = await client.GetAsync($"https://<tunnel-url>/api/external/purchase-data/{logId}");
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                _logger.LogWarning($"Fallo al obtener datos de compra para log ID: {logId}. Estado: {response.StatusCode}");
-                return null;
-            }
+                var client = _httpClientFactory.CreateClient();
+                var payload = new { Purchase = purchaseDto };
+                var json = JsonSerializer.Serialize(payload);
+                _logger.LogInformation($"Enviando JSON al endpoint Retry: {json}");
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<PurchaseDto>(json);
+                var response = await client.PostAsync("https://lzkf0mrp-7037.use2.devtunnels.ms/api/Compras/Retry", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning($"Fallo al realizar el retry. Estado: {response.StatusCode}, Contenido de respuesta: {await response.Content.ReadAsStringAsync()}");
+                    return false;
+                }
+
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var retryResult = JsonSerializer.Deserialize<bool>(responseJson);
+                return retryResult;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error en RetryPurchaseAsync: {ex}");
+                return false;
+            }
         }
 
-        private async Task NotifyExternalSystemAsync(PurchaseDto purchaseDto, string logId)
+
+        private async Task NotifyExternalSystemAsync(PurchaseDto purchaseDto)
         {
-            var client = _httpClientFactory.CreateClient("TunnelClient");
+            var client = _httpClientFactory.CreateClient();
             var payload = new
             {
-                LogId = logId,
                 Purchase = purchaseDto
             };
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync("https://<tunnel-url>/api/external/receive-purchase", content);
+            var response = await client.PostAsync("https://lzkf0mrp-7037.use2.devtunnels.ms/api/Compras/Success", content);
+
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation($"Notificación enviada exitosamente para log ID: {logId}");
+                _logger.LogInformation($"Notificación enviada exitosamente.");
             }
             else
             {
-                _logger.LogError($"Error al enviar la notificación para log ID: {logId}. Estado: {response.StatusCode}");
+                _logger.LogError($"Error al enviar la notificación. Estado: {response.StatusCode}");
             }
         }
+
+
 
         public async Task MarkAsExceptionAsync(string logId)
         {
