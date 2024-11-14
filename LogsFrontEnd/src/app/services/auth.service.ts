@@ -27,4 +27,8 @@ export class AuthService {
       return null;
     }
   }
+  logout(): void {
+    localStorage.removeItem('token');
+    console.log('Sesión cerrada');
+  }
 }
