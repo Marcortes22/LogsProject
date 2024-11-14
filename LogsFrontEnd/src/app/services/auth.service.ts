@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import {jwtDecode} from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  requestToken(username: string, password: string): Observable<any> {
+  requestToken(username: string, password: string): Observable<string> {
     const body = {
       UserName: username,
       Password: password
@@ -21,13 +21,10 @@ export class AuthService {
 
   decodeToken(token: string): any {
     try {
-      return jwt_decode(token);
-    } catch (Error) {
+      return jwtDecode(token);
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
       return null;
     }
   }
 }
-function jwt_decode(token: string): any {
-  throw new Error('Function not implemented.');
-}
-
