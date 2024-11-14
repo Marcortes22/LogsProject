@@ -50,9 +50,9 @@ export class LoginComponent {
        
         this.snackBar.open('Credenciales inválidas. Por favor, inténtalo de nuevo.', 'Cerrar', {
           duration: 5000,
-          horizontalPosition: 'right', // Posición horizontal
-          verticalPosition: 'top',     // Posición vertical
-          panelClass: ['custom-snackbar-error'] // Clase CSS personalizada
+          horizontalPosition: 'right', 
+          verticalPosition: 'top',     
+          panelClass: ['custom-snackbar-error'] 
         });
       },
       complete: () => {
