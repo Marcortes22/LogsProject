@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -24,8 +26,10 @@ import { FormsModule } from '@angular/forms';
 })
 export class LoginComponent {
   hide = true;
+  username: string = '';
+  password: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   togglePasswordVisibility(event: Event) {
     event.preventDefault();
@@ -33,7 +37,21 @@ export class LoginComponent {
   }
 
   onLogin() {
+    this.authService.requestToken(this.username, this.password).subscribe({
+      next: (response) => {
+        console.log('Token:', response);
+        const decodedToken = this.authService.decodeToken(response);
+        console.log('Decoded Token:', decodedToken);
  
-    this.router.navigate(['/error-logs']);
+        this.router.navigate(['/error-logs']);
+      },
+      error: (error) => {
+        console.error('Error:', error);
+
+      },
+      complete: () => {
+        console.log('Request completed');
+      }
+    });
   }
 }

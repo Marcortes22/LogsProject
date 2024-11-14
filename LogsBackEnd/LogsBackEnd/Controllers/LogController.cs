@@ -28,7 +28,6 @@ namespace LogController.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        [Authorize(Roles = "Dashboard")]
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
@@ -49,7 +48,7 @@ namespace LogController.Controllers
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 
-            var client = new HttpClient(handler); // Usar el cliente con validación flexible
+            var client = new HttpClient(handler); 
 
             var tokenRequest = new PasswordTokenRequest
             {

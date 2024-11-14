@@ -8,15 +8,14 @@
   </mat-card-header>
   <mat-card-content>
     <form (ngSubmit)="onLogin()">
-
       <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
-        <input class="input-login" matInput placeholder="Email or Phone" required>
+        <input class="input-login" matInput placeholder="Email or Phone" [(ngModel)]="username" name="username" required>
         <mat-icon matSuffix>person</mat-icon>
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Password</mat-label>
-        <input class="input-login" matInput [type]="hide ? 'password' : 'text'" placeholder="Password" required>
+        <input class="input-login" matInput [type]="hide ? 'password' : 'text'" placeholder="Password" [(ngModel)]="password" name="password" required>
         <button mat-icon-button matSuffix (click)="togglePasswordVisibility($event)" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
           <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
         </button>
