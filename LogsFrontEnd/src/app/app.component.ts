@@ -8,7 +8,7 @@ import { LoginComponent } from "./components/login/login.component";
   standalone: true,
   imports: [RouterOutlet, ErrorLogsComponent, LoginComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'LogsFrontEnd';

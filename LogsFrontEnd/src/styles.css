@@ -10,3 +10,24 @@ body {
  }
 
 
+/* styles.css */
+
+/* Estilos para el snackbar de error */
+.custom-snackbar-error.mat-snack-bar-container {
+  background-color: #e74c3c !important;
+}
+
+.custom-snackbar-error .mat-simple-snackbar {
+  color: #fff !important;
+  font-size: 16px !important;
+}
+
+/* Estilos para el snackbar de éxito */
+.custom-snackbar-success.mat-snack-bar-container {
+  background-color: #2ecc71 !important;
+}
+
+.custom-snackbar-success .mat-simple-snackbar {
+  color: #fff !important;
+  font-size: 16px !important;
+}

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7120/api';
+  private apiUrl = 'https://localhost:7120/Log';
 
   constructor(private http: HttpClient) {}
 
@@ -16,7 +16,7 @@ export class AuthService {
       UserName: username,
       Password: password
     };
-    return this.http.post(`${this.apiUrl}/request-token`, body);
+    return this.http.post(`${this.apiUrl}/request-token`, body, { responseType: 'text' });
   }
 
   decodeToken(token: string): any {
