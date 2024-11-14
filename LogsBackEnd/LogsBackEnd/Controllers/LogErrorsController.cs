@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Application.Hub;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LogsBackEnd.Controllers
 {
@@ -25,6 +26,7 @@ namespace LogsBackEnd.Controllers
 
         // GET: api/LogErrors
         [HttpGet]
+        [Authorize(Roles = "LogErrores")]
         public async Task<ActionResult<IEnumerable<Log>>> GetLogs()
         {
             try
