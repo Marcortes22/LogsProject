@@ -41,7 +41,7 @@ export class LoginComponent {
     this.authService.requestToken(this.username, this.password).subscribe({
       next: (response) => {
         console.log('Token:', response);
-        localStorage.setItem('token', response); // Almacena el token en el localStorage
+        localStorage.setItem('token', response);
         const decodedToken = this.authService.decodeToken(response);
         console.log('Decoded Token:', decodedToken);
         this.router.navigate(['/error-logs']);
