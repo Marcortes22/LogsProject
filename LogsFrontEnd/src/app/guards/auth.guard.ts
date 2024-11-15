@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = this.authService.decodeToken(token);
-      if (decodedToken && decodedToken.role === 'LogError') {
+      if (decodedToken && decodedToken.role === 'LogErrores') {
         return true;
       }
     }

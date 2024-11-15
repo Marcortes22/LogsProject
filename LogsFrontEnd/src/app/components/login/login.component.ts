@@ -10,7 +10,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/auth.service';
 
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -42,18 +41,18 @@ export class LoginComponent {
     this.authService.requestToken(this.username, this.password).subscribe({
       next: (response) => {
         console.log('Token:', response);
+        localStorage.setItem('token', response); // Almacena el token en el localStorage
         const decodedToken = this.authService.decodeToken(response);
         console.log('Decoded Token:', decodedToken);
         this.router.navigate(['/error-logs']);
       },
       error: (error) => {
         console.error('Error:', error);
-       
         this.snackBar.open('Credenciales inválidas. Por favor, inténtalo de nuevo.', 'Cerrar', {
           duration: 5000,
-          horizontalPosition: 'right', 
-          verticalPosition: 'top',     
-          panelClass: ['custom-snackbar-error'] 
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['custom-snackbar-error']
         });
       },
       complete: () => {
