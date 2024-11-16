@@ -42,7 +42,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("RetryJob-trigger")
-        .WithSimpleSchedule(x => x.WithIntervalInMinutes(2).RepeatForever()));
+        .WithSimpleSchedule(x => x.WithIntervalInSeconds(10).RepeatForever()));
 });
 
 

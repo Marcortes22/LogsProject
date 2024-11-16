@@ -1,6 +1,7 @@
 export enum ErrorType {
   Controlled = 'CONTROLLED',
   Uncontrolled = 'UNCONTROLLED',
+  Excepcion = 'Excepcion', 
 }
 
 export interface ErrorLog {

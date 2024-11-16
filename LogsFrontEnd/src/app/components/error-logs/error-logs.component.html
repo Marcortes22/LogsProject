@@ -3,15 +3,16 @@
 
   <!-- Botones para cambiar de tab -->
   <div class="tabs">
-    <button (click)="setActiveTab('controlled')" [class.active]="activeTab === 'controlled'">Errores
-      Controlados</button>
-    <button (click)="setActiveTab('uncontrolled')" [class.active]="activeTab === 'uncontrolled'">Errores No
-      Controlados</button>
+    <button (click)="setActiveTab('uncontrolled')" [class.active]="activeTab === 'uncontrolled'">
+      Errores No Controlados
+    </button>
+    <button (click)="setActiveTab('exception')" [class.active]="activeTab === 'exception'">
+      Excepciones
+    </button>
   </div>
 
-
-  <!-- Tabla de Errores Controlados -->
-  @if (activeTab === 'controlled') {
+  <!-- Tabla de Errores No Controlados -->
+  @if (activeTab === 'uncontrolled') {
   <table>
     <thead>
       <tr>
@@ -24,10 +25,10 @@
       </tr>
     </thead>
     <tbody>
-      @for (error of controlledErrors; track error.id) {
+      @for (error of uncontrolledErrors; track error.id) {
       <tr>
         <td>{{ error.id }}</td>
-        <td>{{ error.createdAt}}</td>
+        <td>{{ error.createdAt }}</td>
         <td>{{ error.message }}</td>
         <td>{{ error.code }}</td>
         <td>{{ error.retryCount }}</td>
@@ -38,24 +39,24 @@
   </table>
   }
 
-  <!-- Tabla de Errores No Controlados -->
-  @if (activeTab === 'uncontrolled') {
+  <!-- Tabla de Excepciones -->
+  @if (activeTab === 'exception') {
   <table>
     <thead>
-      <th>ID</th>
+      <tr>
+        <th>ID</th>
         <th>Timestamp</th>
         <th>Mensaje</th>
-        <th>Code</th>
         <th>Reintentos</th>
         <th>Recuperable</th>
+      </tr>
     </thead>
     <tbody>
-      @for (error of uncontrolledErrors; track error.id) {
+      @for (error of exceptionErrors; track error.id) {
       <tr>
         <td>{{ error.id }}</td>
-        <td>{{ error.createdAt}}</td>
+        <td>{{ error.createdAt }}</td>
         <td>{{ error.message }}</td>
-        <td>{{ error.code }}</td>
         <td>{{ error.retryCount }}</td>
         <td>{{ error.isRetriable }}</td>
       </tr>
