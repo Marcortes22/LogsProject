@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Hub;
+using System.Net.Http.Json;
 
 namespace Application.Services
 {
@@ -89,15 +90,15 @@ namespace Application.Services
             return null;
         }
 
+
+
         public async Task<bool> RetryPurchaseAsync(PurchaseDto purchaseDto)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                var payload = new { Purchase = purchaseDto };
-                var json = JsonSerializer.Serialize(payload);
-                _logger.LogInformation($"Enviando JSON al endpoint Retry: {json}");
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var content = JsonContent.Create(purchaseDto);
+                _logger.LogInformation($"Enviando JSON al endpoint Retry: {await content.ReadAsStringAsync()}");
 
                 var response = await client.PostAsync("https://lzkf0mrp-7037.use2.devtunnels.ms/api/Compras/Retry", content);
 
@@ -117,6 +118,8 @@ namespace Application.Services
                 return false;
             }
         }
+
+
 
 
         private async Task NotifyExternalSystemAsync(PurchaseDto purchaseDto)
